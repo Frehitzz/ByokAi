@@ -1,3 +1,215 @@
+# AGENTS.md
+
+# Project Overview
+
+This project is a Laravel 13 application using:
+
+- Frontend: React 19 + Inertia.js v3 + Vite + Tailwind CSS v4
+- Backend: Laravel + Fortify + Wayfinder
+- Testing: Pest + PHPUnit
+- Styling and formatting: Tailwind CSS, ESLint, Prettier, Pint
+
+The goal of this project is to build maintainable, scalable features that fit the existing Laravel + Inertia architecture and remain approachable for future contributors.
+
+---
+
+# Development Philosophy
+
+- Keep code simple, readable, and maintainable
+- Avoid overengineering and unnecessary abstractions
+- Reuse existing components, hooks, actions, and patterns before creating new ones
+- Prefer clarity over cleverness
+- Build features incrementally
+- Keep changes focused and easy to review
+- Preserve existing behavior unless the task requires a deliberate change
+
+---
+
+# Important Restrictions
+
+- Do not hardcode credentials, secrets, or API keys
+- Do not expose sensitive configuration values
+- Do not install or upgrade dependencies without approval
+- Do not change database schema without explaining the reason
+- Do not remove or rename important files without explanation
+- Do not modify production-related configuration carelessly
+- Do not create new top-level folders without approval
+- Do not create documentation files unless explicitly requested
+
+---
+
+# Protected Areas
+
+- Do not modify `.env.example` unless necessary
+- Do not remove existing routes without explanation
+- Do not change response structures without explanation
+- Do not remove migrations that may already be in use
+- Do not delete existing components unless confirmed
+
+---
+
+# Frontend Rules
+
+## React and Inertia Rules
+
+- Use functional components only
+- Use hooks instead of class components
+- Keep components modular and focused
+- Avoid extremely large components
+- Reuse existing UI patterns before creating new ones
+- Keep page components focused on composition and data flow
+- Prefer existing Inertia patterns over custom client-side state machinery
+- Use Wayfinder-generated routes where applicable
+
+## Styling Rules
+
+- Use Tailwind CSS
+- Avoid inline styles unless necessary
+- Keep spacing, typography, and layout consistent
+- Maintain responsive behavior on desktop and mobile
+- Keep UI clean and readable
+
+## Frontend Folder Structure
+
+- Components -> `resources/js/components`
+- Pages -> `resources/js/pages`
+- Hooks -> `resources/js/hooks`
+- Layouts -> `resources/js/layouts`
+- Shared utilities -> `resources/js/lib`
+- Route helpers -> `resources/js/routes` and `resources/js/wayfinder`
+- Types -> `resources/js/types`
+
+---
+
+# Backend Rules
+
+## Laravel Rules
+
+- Follow Laravel conventions and existing project patterns
+- Keep controllers clean
+- Prefer Form Requests for validation when appropriate
+- Keep business logic out of controllers when it becomes substantial
+- Reuse existing models, actions, and relationships before introducing new abstractions
+- Organize route changes within the existing route files
+
+## Database Rules
+
+- Use migrations for schema changes
+- Keep naming conventions consistent
+- Avoid duplicate data
+- Use indexes and foreign keys when appropriate
+- Never modify production migrations directly
+
+## Response and API Rules
+
+- Keep response structures consistent with the existing application
+- Use proper HTTP status codes where applicable
+- Validate all user input
+- Protect private routes with the correct middleware
+
+## Security Rules
+
+- Never expose secrets
+- Use `.env` variables properly
+- Sanitize and validate user input
+- Validate uploaded files
+- Never trust client-side validation alone
+- Avoid granting unnecessary permissions
+
+---
+
+# Backend Folder Structure
+
+- Controllers, requests, middleware, and resources -> `app/Http`
+- Models -> `app/Models`
+- Actions and application logic helpers -> `app/Actions`
+- Service providers -> `app/Providers`
+- Route definitions -> `routes`
+
+---
+
+# AI Assistant Instructions
+
+## Before Coding
+
+- Analyze the existing architecture first
+- Understand the current code flow before editing
+- Reuse existing patterns before creating new ones
+- Avoid breaking existing functionality
+- Ask before making major architectural changes
+- Prefer simple and maintainable solutions
+
+## During Coding
+
+- Follow the existing project structure
+- Keep changes minimal and focused
+- Avoid unnecessary abstractions
+- Maintain consistent naming conventions
+- Avoid duplicated logic
+
+## After Coding
+
+- Review for bugs and regressions
+- Check for security issues
+- Check for missing imports and unused code
+- Explain modified files and important decisions concisely
+- Run the minimum relevant automated tests for the change
+
+---
+
+# Git Rules
+
+- Use conventional commit prefixes when creating commits:
+  - `feat:` new feature
+  - `fix:` bug fix
+  - `refactor:` code cleanup
+  - `style:` UI or design changes
+  - `docs:` documentation
+  - `chore:` maintenance tasks
+
+---
+
+# Testing Rules
+
+- Test functionality before finalizing
+- Prefer automated tests over manual-only verification
+- Run the minimum relevant tests needed for confidence
+- Check browser console errors when working on frontend behavior
+- Verify responsive behavior when changing UI
+- Check edge cases when practical
+
+---
+
+# Performance Rules
+
+- Avoid unnecessary re-renders
+- Avoid duplicate database queries
+- Reuse components and data-loading patterns when possible
+- Optimize expensive API or page-loading flows when necessary
+
+---
+
+# Code Quality Rules
+
+- Use readable variable and method names
+- Avoid deeply nested logic when a clearer structure exists
+- Keep functions focused on one responsibility
+- Remove unused imports and dead code
+- Write code that is easy to understand and extend
+
+---
+
+# Final Goal
+
+The goal of this project is to:
+
+- Build maintainable software
+- Follow proper Laravel and Inertia engineering practices
+- Keep the codebase organized and scalable
+- Use AI as a development assistant, not as a replacement for understanding
+
+---
+
 <laravel-boost-guidelines>
 === foundation rules ===
 
