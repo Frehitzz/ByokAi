@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\User;
+use Laravel\Sanctum\PersonalAccessToken;
 use Laravel\Fortify\Features;
 
 beforeEach(function () {
@@ -22,4 +24,9 @@ test('new users can register', function () {
 
     $this->assertAuthenticated();
     $response->assertRedirect(route('dashboard', absolute: false));
+
+    $user = User::where('email', 'test@example.com')->first();
+
+    expect($user)->not->toBeNull();
+    expect(PersonalAccessToken::query()->where('tokenable_id', $user->id)->exists())->toBeTrue();
 });
