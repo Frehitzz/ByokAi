@@ -12,14 +12,19 @@ import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
+/** defines the type script type for the props that the login component
+ * will receive from laravel bckend
+ * */ 
 type Props = {
-    status?: string;
-    canResetPassword: boolean;
+    status?: string; // to show a status message
+    canResetPassword: boolean; // indicates wheteher the forgot password feature is enablen in backendd
 };
 
+// this is the main function for Login, this defones the props on the top
 export default function Login({ status, canResetPassword }: Props) {
     return (
         <>
+            {/* BROWSERS TAB TTITLE */}
             <Head title="Log in" />
 
             <PasskeyVerify />

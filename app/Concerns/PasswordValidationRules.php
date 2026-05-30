@@ -12,8 +12,14 @@ trait PasswordValidationRules
      *
      * @return array<int, ValidationRule|array<mixed>|string>
      */
+    // this define a protected method name passwordRules that
+    // returns an array of validation rules
+    
+    // How this works: this method called in ResetUserPassword.php like this,
+    // $this->passwordRules()
     protected function passwordRules(): array
     {
+        // validation rules
         return ['required', 'string', Password::default(), 'confirmed'];
     }
 

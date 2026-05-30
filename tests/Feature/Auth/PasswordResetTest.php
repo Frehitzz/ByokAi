@@ -20,7 +20,12 @@ test('reset password link can be requested', function () {
 
     $user = User::factory()->create();
 
-    $this->post(route('password.email'), ['email' => $user->email]);
+    $response = $this->from(route('password.request'))
+        ->post(route('password.email'), ['email' => $user->email]);
+
+    $response
+        ->assertRedirect(route('password.request'))
+        ->assertSessionHas('status');
 
     Notification::assertSentTo($user, ResetPassword::class);
 });
