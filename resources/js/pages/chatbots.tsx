@@ -2,12 +2,11 @@ import { Head } from '@inertiajs/react';
 import {
     Bot,
     Globe,
+    KeyRound,
     MessageSquareText,
-    Orbit,
     Plus,
-    Sparkles,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -17,13 +16,13 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -33,6 +32,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    providerOptions,
+    savedProviderProfiles,
+    type SavedProviderProfileId,
+} from '@/lib/mock-ai-providers';
 import { chatbots } from '@/routes';
 
 const chatbotTemplates = [
@@ -59,21 +63,14 @@ const chatbotTemplates = [
     },
 ] as const;
 
-const providerModels = {
-    gemini: ['Gemini 2.5 Flash', 'Gemini 2.5 Pro'],
-    gpt: ['GPT-4.1 mini', 'GPT-4.1', 'GPT-4o'],
-} as const;
-
 type TemplateId = (typeof chatbotTemplates)[number]['id'];
-type ProviderId = keyof typeof providerModels;
-type ProviderModel = (typeof providerModels)[ProviderId][number];
 
 type ChatbotCard = {
     id: number;
     name: string;
     templateLabel: string;
+    providerNickname: string;
     providerLabel: string;
-    model: string;
     domain: string;
     prompt: string;
 };
@@ -81,35 +78,58 @@ type ChatbotCard = {
 type ChatbotFormState = {
     chatbotName: string;
     selectedTemplate: TemplateId;
-    selectedProvider: ProviderId;
-    selectedModel: ProviderModel;
+    selectedProviderProfile: SavedProviderProfileId;
     systemPrompt: string;
     allowedDomain: string;
 };
 
 const defaultTemplate = chatbotTemplates[0];
-const defaultProvider: ProviderId = 'gpt';
+const defaultProviderProfile = savedProviderProfiles[0];
 
 function getDefaultFormState(): ChatbotFormState {
     return {
         chatbotName: '',
         selectedTemplate: defaultTemplate.id,
-        selectedProvider: defaultProvider,
-        selectedModel: providerModels[defaultProvider][0],
+        selectedProviderProfile: defaultProviderProfile.id,
         systemPrompt: defaultTemplate.systemPrompt,
         allowedDomain: '',
     };
 }
 
 export default function Chatbots() {
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
     const [draft, setDraft] = useState(getDefaultFormState);
     const [createdChatbots, setCreatedChatbots] = useState<ChatbotCard[]>([]);
 
     const activeTemplate =
         chatbotTemplates.find((template) => template.id === draft.selectedTemplate) ??
         defaultTemplate;
-    const availableModels = providerModels[draft.selectedProvider];
+    const activeProviderProfile = useMemo(
+        () =>
+            savedProviderProfiles.find(
+                (providerProfile) => providerProfile.id === draft.selectedProviderProfile,
+            ) ?? defaultProviderProfile,
+        [draft.selectedProviderProfile],
+    );
+    const activeProvider = useMemo(
+        () =>
+            providerOptions.find(
+                (provider) => provider.id === activeProviderProfile.providerId,
+            ) ?? providerOptions[0],
+        [activeProviderProfile.providerId],
+    );
+
+    useEffect(() => {
+        const openDrawer = () => {
+            setIsCreateDrawerOpen(true);
+        };
+
+        window.addEventListener('chatbots:create', openDrawer);
+
+        return () => {
+            window.removeEventListener('chatbots:create', openDrawer);
+        };
+    }, []);
 
     const handleTemplateChange = (templateId: TemplateId) => {
         const template =
@@ -122,20 +142,12 @@ export default function Chatbots() {
         }));
     };
 
-    const handleProviderChange = (provider: ProviderId) => {
-        setDraft((currentDraft) => ({
-            ...currentDraft,
-            selectedProvider: provider,
-            selectedModel: providerModels[provider][0],
-        }));
-    };
-
     const openCreateModal = () => {
-        setIsCreateModalOpen(true);
+        setIsCreateDrawerOpen(true);
     };
 
     const closeCreateModal = () => {
-        setIsCreateModalOpen(false);
+        setIsCreateDrawerOpen(false);
     };
 
     const handleCreateChatbot = () => {
@@ -144,8 +156,8 @@ export default function Chatbots() {
                 id: Date.now(),
                 name: draft.chatbotName || 'Untitled chatbot',
                 templateLabel: activeTemplate.label,
-                providerLabel: draft.selectedProvider.toUpperCase(),
-                model: draft.selectedModel,
+                providerNickname: activeProviderProfile.nickname,
+                providerLabel: activeProvider.label,
                 domain: draft.allowedDomain || 'No domain added',
                 prompt: draft.systemPrompt,
             },
@@ -153,38 +165,15 @@ export default function Chatbots() {
         ]);
 
         setDraft(getDefaultFormState());
-        setIsCreateModalOpen(false);
+        setIsCreateDrawerOpen(false);
     };
 
     return (
         <>
             <Head title="Chatbots" />
 
-            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+            <Sheet open={isCreateDrawerOpen} onOpenChange={setIsCreateDrawerOpen}>
                 <div className="flex h-full flex-1 flex-col gap-5 rounded-xl p-4 md:p-6">
-                    <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-                        <div className="space-y-2">
-                            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-background px-3 py-1 text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                                <Sparkles className="size-3.5" />
-                                Chatbot Builder
-                            </div>
-                            <div className="space-y-1">
-                                <h1 className="text-3xl font-semibold tracking-tight">
-                                    Chatbots
-                                </h1>
-                                <p className="max-w-2xl text-sm text-muted-foreground">
-                                    Create and preview chatbot setups that follow the same
-                                    visual system as the rest of your workspace.
-                                </p>
-                            </div>
-                        </div>
-
-                        <Button type="button" size="lg" onClick={openCreateModal}>
-                            <Plus className="size-4" />
-                            Create
-                        </Button>
-                    </div>
-
                     {createdChatbots.length === 0 ? (
                         <Card className="border-sidebar-border/70 bg-card/80">
                             <CardContent className="flex min-h-[420px] flex-col items-center justify-center gap-6 text-center">
@@ -196,9 +185,9 @@ export default function Chatbots() {
                                         Create your first chatbot
                                     </h2>
                                     <p className="max-w-md text-sm leading-6 text-muted-foreground">
-                                        Start with a template, tune the system prompt, choose
-                                        a provider and model, then lock it to an allowed
-                                        domain.
+                                        Start with a template, tune the system prompt, assign
+                                        one of your saved providers, then lock it to an
+                                        allowed domain.
                                     </p>
                                 </div>
                                 <Button type="button" size="lg" onClick={openCreateModal}>
@@ -241,11 +230,14 @@ export default function Chatbots() {
 
                                         <div className="rounded-xl border border-border bg-background px-4 py-3">
                                             <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                                                <Orbit className="size-3.5" />
-                                                AI stack
+                                                <KeyRound className="size-3.5" />
+                                                Assigned provider
                                             </div>
                                             <p className="mt-2 text-sm font-medium">
-                                                {chatbot.providerLabel} / {chatbot.model}
+                                                {chatbot.providerNickname}
+                                            </p>
+                                            <p className="mt-1 text-xs text-muted-foreground">
+                                                {chatbot.providerLabel}
                                             </p>
                                         </div>
 
@@ -271,25 +263,24 @@ export default function Chatbots() {
                     )}
                 </div>
 
-                <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
-                    <DialogHeader className="space-y-2">
-                        <DialogTitle className="text-2xl">
+                <SheetContent
+                    side="right"
+                    className="w-full overflow-y-auto border-l p-0 sm:max-w-3xl"
+                >
+                    <SheetHeader className="space-y-2 border-b px-6 py-5 text-left">
+                        <SheetTitle className="text-2xl">
                             Create chatbot
-                        </DialogTitle>
-                        <DialogDescription>
+                        </SheetTitle>
+                        <SheetDescription>
                             Fill in the chatbot details here. This is UI-only for now, so
                             saving will preview the chatbot on this page.
-                        </DialogDescription>
-                    </DialogHeader>
+                        </SheetDescription>
+                    </SheetHeader>
 
-                    <div className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(280px,0.95fr)]">
+                    <div className="grid gap-4 p-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(280px,0.95fr)]">
                         <Card className="border-sidebar-border/70 bg-card/80">
                             <CardHeader className="gap-2">
                                 <CardTitle className="text-xl">Core configuration</CardTitle>
-                                <CardDescription>
-                                    Define the chatbot identity, behavior, model choice, and
-                                    website access scope.
-                                </CardDescription>
                             </CardHeader>
 
                             <CardContent className="grid gap-6">
@@ -331,7 +322,7 @@ export default function Chatbots() {
                                                 ))}
                                             </SelectContent>
                                         </Select>
-                                        <p className="text-sm text-muted-foreground">
+                                        <p className="text-[12px] text-muted-foreground">
                                             {activeTemplate.description}
                                         </p>
                                     </div>
@@ -352,54 +343,41 @@ export default function Chatbots() {
                                         className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 flex min-h-36 w-full rounded-md border bg-transparent px-3 py-3 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:ring-[3px]"
                                         placeholder="Define how the assistant should behave."
                                     />
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="text-[12px] text-muted-foreground">
                                         Starts with the selected template and can be customized
                                         per chatbot.
                                     </p>
                                 </div>
 
-                                <div className="grid gap-5 md:grid-cols-2">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="provider">AI provider</Label>
-                                        <Select
-                                            value={draft.selectedProvider}
-                                            onValueChange={(value: ProviderId) =>
-                                                handleProviderChange(value)
-                                            }
-                                        >
-                                            <SelectTrigger id="provider" className="w-full">
-                                                <SelectValue placeholder="Select a provider" />
-                                            </SelectTrigger>
-                                            <SelectContent align="start">
-                                                <SelectItem value="gpt">GPT</SelectItem>
-                                                <SelectItem value="gemini">Gemini</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="model">Model</Label>
-                                        <Select
-                                            value={draft.selectedModel}
-                                            onValueChange={(value: ProviderModel) =>
-                                                setDraft((currentDraft) => ({
-                                                    ...currentDraft,
-                                                    selectedModel: value,
-                                                }))
-                                            }
-                                        >
-                                            <SelectTrigger id="model" className="w-full">
-                                                <SelectValue placeholder="Select a model" />
-                                            </SelectTrigger>
-                                            <SelectContent align="start">
-                                                {availableModels.map((model) => (
-                                                    <SelectItem key={model} value={model}>
-                                                        {model}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="saved-provider">Saved provider</Label>
+                                    <Select
+                                        value={draft.selectedProviderProfile}
+                                        onValueChange={(value: SavedProviderProfileId) =>
+                                            setDraft((currentDraft) => ({
+                                                ...currentDraft,
+                                                selectedProviderProfile: value,
+                                            }))
+                                        }
+                                    >
+                                        <SelectTrigger id="saved-provider" className="w-full">
+                                            <SelectValue placeholder="Select a saved provider" />
+                                        </SelectTrigger>
+                                        <SelectContent align="start">
+                                            {savedProviderProfiles.map((providerProfile) => (
+                                                <SelectItem
+                                                    key={providerProfile.id}
+                                                    value={providerProfile.id}
+                                                >
+                                                    {providerProfile.nickname}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <p className="text-[12px] text-muted-foreground">
+                                        Choose one of the provider nicknames created on the AI
+                                        Provider page.
+                                    </p>
                                 </div>
 
                                 <div className="space-y-2">
@@ -415,7 +393,7 @@ export default function Chatbots() {
                                         }
                                         placeholder="app.example.com"
                                     />
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="text-[12px] text-muted-foreground">
                                         Restrict where this chatbot can be embedded or loaded.
                                     </p>
                                 </div>
@@ -451,12 +429,14 @@ export default function Chatbots() {
 
                                     <div className="rounded-xl border border-border bg-background px-4 py-3">
                                         <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                                            <Orbit className="size-3.5" />
-                                            AI stack
+                                            <KeyRound className="size-3.5" />
+                                            Saved provider
                                         </div>
                                         <p className="mt-2 text-sm font-medium">
-                                            {draft.selectedProvider.toUpperCase()} /{' '}
-                                            {draft.selectedModel}
+                                            {activeProviderProfile.nickname}
+                                        </p>
+                                        <p className="mt-1 text-xs text-muted-foreground">
+                                            {activeProvider.label}
                                         </p>
                                     </div>
 
@@ -491,16 +471,16 @@ export default function Chatbots() {
                         </div>
                     </div>
 
-                    <DialogFooter>
+                    <SheetFooter className="border-t px-6 py-5 sm:flex-row sm:justify-end">
                         <Button type="button" variant="outline" onClick={closeCreateModal}>
                             Cancel
                         </Button>
                         <Button type="button" onClick={handleCreateChatbot}>
                             Save chatbot
                         </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
         </>
     );
 }
@@ -512,4 +492,14 @@ Chatbots.layout = {
             href: chatbots(),
         },
     ],
+    headerActions: (
+        <Button
+            type="button"
+            size="lg"
+            onClick={() => window.dispatchEvent(new Event('chatbots:create'))}
+        >
+            <Plus className="size-4" />
+            Create
+        </Button>
+    ),
 };

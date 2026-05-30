@@ -6,10 +6,11 @@ import type { AppLayoutProps } from '@/types';
 export default function AppHeaderLayout({
     children,
     breadcrumbs,
+    headerActions,
 }: AppLayoutProps) {
     return (
         <AppShell variant="header">
-            <AppHeader breadcrumbs={breadcrumbs} />
+            <AppHeader breadcrumbs={breadcrumbs} headerActions={headerActions} />
             <AppContent variant="header">{children}</AppContent>
         </AppShell>
     );

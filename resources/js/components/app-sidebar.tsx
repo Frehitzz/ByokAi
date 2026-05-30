@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, Bot, FolderGit2, LayoutGrid } from 'lucide-react';
+import { BookOpen, Bot, FolderGit2, KeyRound, LayoutGrid } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -13,7 +13,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { chatbots, dashboard } from '@/routes';
+import { aiProviders, chatbots, dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -26,6 +26,11 @@ const mainNavItems: NavItem[] = [
         title: 'Chatbots',
         href: chatbots(),
         icon: Bot,
+    },
+    {
+        title: 'AI Provider',
+        href: aiProviders(),
+        icon: KeyRound,
     },
 ];
 
